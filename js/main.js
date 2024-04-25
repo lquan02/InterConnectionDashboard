@@ -7,6 +7,71 @@ style: 'mapbox://styles/mapbox/light-v10', // style URL
 zoom: 10.3, // starting zoom
 center: [-122.33359685339107, 47.61195411777029] // starting center
 });
+
+const grades = [1000, 2000, 3000], 
+colors = ['rgb(0,188,161)', 'rgb(0,212,147)', 'rgb(172,250,112)'], 
+radii = [5, 15, 20];
+
+map.on('load', () => {
+map.addSource('incomeCounts', {
+    type: 'geojson',
+    data: 'data/HHincome.geojson'
+});
+
+map.on('click', 'incomeCounts-point', (event) => {
+    new mapboxgl.Popup()
+    .setLngLat(event.features[0].geometry.coordinates)
+    .setHTML(`<strong>Household Income:</strong> ${event.features[0].properties.HHIncome}`)
+    .addTo(map);
+});
+
+const legend = document.getElementById('legend');
+
+var labels = ['<strong>Size</strong>'], vbreak;
+for (var i = 0; i < grades.length; i++) {
+    vbreak = grades[i];
+    dot_radius = 2 * radii[i];
+    labels.push(
+    '<p class="break"><i class="dot" style="background:' + colors[i] + '; width: ' + dot_radius +
+    'px; height: ' +
+    dot_radius + 'px; "></i> <span class="dot-label" style="top: ' + dot_radius / 2 + 'px;">' + vbreak +
+    '</span></p>');
+
+}
+
+legend.innerHTML = labels.join('');
+
+map.addLayer({
+    'id': 'incomeCounts-point',
+    'type': 'circle',
+    'source': 'incomeCounts',
+    'paint': {
+        'circle-radius': {
+            'property': 'HHIncome',
+            'stops': [
+            [grades[0], radii[0]],
+            [grades[1], radii[1]],
+            [grades[2], radii[2]]
+            ]
+        },
+        'circle-color': {
+            'property': 'HHIncome',
+            'stops': [
+            [grades[0], colors[0]],
+            [grades[1], colors[1]],
+            [grades[2], colors[2]]
+            ]
+        },
+        'circle-stroke-color': 'white',
+        'circle-stroke-width': 1,
+        'circle-opacity': 0.28
+    }       
+});
+
+
+
+});
+
 // load data and add as layer
 async function geojsonFetch() {
 let response = await fetch('data/map.geojson');
@@ -91,5 +156,6 @@ map.on('mousemove', ({point}) => {
         `<p>Hover over a Place!</p>`;
 });
 }
+
 // Call the function to fetch GeoJSON data and load the map
 geojsonFetch();
