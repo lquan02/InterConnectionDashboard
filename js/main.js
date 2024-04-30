@@ -1,11 +1,10 @@
 // initialize basemmap
-mapboxgl.accessToken =
-'pk.eyJ1IjoiamFrb2J6aGFvIiwiYSI6ImNpcms2YWsyMzAwMmtmbG5icTFxZ3ZkdncifQ.P9MBej1xacybKcDN_jehvw';
+mapboxgl.accessToken = 'pk.eyJ1IjoiamFrb2J6aGFvIiwiYSI6ImNpcms2YWsyMzAwMmtmbG5icTFxZ3ZkdncifQ.P9MBej1xacybKcDN_jehvw';
 const map = new mapboxgl.Map({
-container: 'map', // container ID
-style: 'mapbox://styles/mapbox/light-v10', // style URL
-zoom: 10.3, // starting zoom
-center: [-122.33359685339107, 47.61195411777029] // starting center
+    container: 'map', // container ID
+    style: 'mapbox://styles/mapbox/light-v10', // style URL
+    zoom: 10.3, // starting zoom
+    center: [-122.33359685339107, 47.61195411777029] // starting center
 });
 
 const grades = [1000, 2000, 3000], 
@@ -13,9 +12,9 @@ colors = ['rgb(0,188,161)', 'rgb(0,212,147)', 'rgb(172,250,112)'],
 radii = [5, 15, 20];
 
 map.on('load', () => {
-map.addSource('incomeCounts', {
-    type: 'geojson',
-    data: 'data/HHincome.geojson'
+    map.addSource('incomeCounts', {
+        type: 'geojson',
+        data: 'data/HHincome.geojson'
 });
 
 map.on('click', 'incomeCounts-point', (event) => {
@@ -36,11 +35,8 @@ for (var i = 0; i < grades.length; i++) {
     'px; height: ' +
     dot_radius + 'px; "></i> <span class="dot-label" style="top: ' + dot_radius / 2 + 'px;">' + vbreak +
     '</span></p>');
-
 }
-
 legend.innerHTML = labels.join('');
-
 map.addLayer({
     'id': 'incomeCounts-point',
     'type': 'circle',
@@ -67,9 +63,6 @@ map.addLayer({
         'circle-opacity': 0.28
     }       
 });
-
-
-
 });
 
 // load data and add as layer
