@@ -17,21 +17,129 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
         <!-- Font awesome -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-        <title>InternConnection Internet Access Hub</title>
+
+        <title>2024 InterConnection Map</title>
+        <link rel="icon" type="image/x-icon" href="data/icicon.png">
     </head>
     <body>
-        <header>    
-            <div id="map"></div>
-            <div class='map-overlay' id='features'>
-                <h2>InternConnection</h2>
-                <div id='text-description'>
-                    <p>Hover over a place!</p>
+        <header class="nav__bar">
+            <div class="nav__content">
+                <a class="logo active" href="index.html">2024 InterConnection Internet Access</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <nav class="nav" id="myTopnav">
+                    <ul class="nav__list">
+                        <li class="nav__item">
+                            <a class="nav-link active" href="index.html"><i class="fa-solid fa-house-chimney fa-xl"></i></a>
+                        </li>
+                        <li class="nav__item">
+                            <a class="nav-link active" aria-current="page" onclick="openPopup(1)">
+                                <i class="fa-regular fa-circle-question fa-xl"></i>
+                            </a>
+                        </li>
+                        <li class="nav__item">
+                            <a class="nav-link active" aria-current="page" onclick="openPopup(2)">
+                                <i class="fa-solid fa-flag fa-xl"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>  
+        </header>
+        <main class = "body-content">
+            <div id = "popup-container"> 
+                <div id = "description-popup">
+                    <h2> Information <br><br></h2>
+                    <a href="javascript:void(0)" id="closebtn" onclick="closePopup(1)">
+                        <i class="fa-solid fa-xmark"></i>
+                    </a>
+                    <!--FIX THIS MATCH WITH OUR PROJECT OVERVIEW AND GOAL-->
+                    <div id="content-popup">
+                        <h3> About this Project </h3>
+                            <p>
+                                The 2022 Interactive Influenza Disease Map project stands as a comprehensive initiative driven by primary data sources extracted from the CDC Weekly U.S.
+                                Influenza Surveillance Report, covering all 52 weeks of 2022. Our team meticulously curated two datasets, the first detailing flu cases categorized by Influenza types A and B
+                                reported by U.S. Clinical Laboratories, and the second documenting influenza-related deaths by state, sourced from the NCHS Mortality Surveillance.
+                                These two weekly datasets were combined as a single file and then aggregated by state, providing a robust foundation for a comprehensive annual influenza dataset for the year 2022. <br><br>
+                            </p>
+                        <h3> Project Goals </h3>
+                            <p>
+                                The primary goal of our project is to create a user-friendly and interactive map with a comprehensive visual representation of flu cases and related deaths in the United States for the year 2022. Building on the enriched datasets derived from the CDC, merged seamlessly with state geometries, our objective is to offer users not just a visual representation but a deeper understanding of the patterns and implications of flu activity across the nation.
+                                <br>
+                                <b>Enhanced User Engagement</b>: Beyond the surface level of presenting data, our project aspires to captivate users, fostering a high degree of engagement. The interactive map is designed not only to be visually appealing but also to encourage users to actively explore and interact with the data.
+                                <br>
+                                <b>Spatial and Temporal Analysis</b>: The interactive map is not merely a snapshot but a dynamic tool for spatial and temporal analysis. Users can delve into the ebb and flow of flu activity over the course of the year, discerning patterns and trends that might be obscured in static representations.
+                                <br>
+                                <b>Empowering Informed Decision-Making</b>: The ultimate goal is to empower users with the knowledge to make informed decisions. Whether it's a public health official devising targeted interventions, a policymaker allocating resources, or an individual taking personal precautions, our project aims to equip users with the information necessary for proactive decision-making.
+                                <br><br>
+                            </p>
+                    </div>
+                </div>
+                <div id = "acknowledge-popup">
+                    <h2> Acknowledgments <br><br> </h2>
+                    <a href="javascript:void(0)" id="closebtn" onclick="closePopup(2)">
+                        <i class="fa-solid fa-xmark"></i>
+                    </a>
+                    <div id="content-popup">
+                        <h3> Datasets and References</h3>
+                            <p> All the internet access, technology access and Adoption statistics are sourced from the link below:</p>
+                                <ul>
+                                    <li><a href="https://data.seattle.gov/Community/Technology-Access-and-Adoption-Survey-2023/jddv-fz6y">Technology Access and Adoption Survey 2023</a></li>
+                                    <li><a href="https://data.seattle.gov/Community/Technology-Access-and-Adoption-Survey-2018/cz6d-tu92/about_data">Technology Access and Adoption Survey 2018</a></li>
+                                    <li><a href="https://kingcounty.maps.arcgis.com/apps/webappviewer/index.html?id=241e339bf8e143f1aa526153300000a1">King County WTD Social Vulnerability Index</a></li>
+                                    <li><a href="https://www.seattle.gov/tech/reports-and-data/about-digital-equity">Seattle IT - About Digital Equity</a></li>
+                                    <li><a href="https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::ifadashboarddata/about">Internet For All Dashboard Data (IFA data)</a></li>
+                                    <li><a href="https://seattle.gov/tech/reports-and-data/internet-for-all/internet-for-all-seattle-dashboards">Internet for All Seattle Dashboards</a></li>
+                                </ul>
+                            <p>
+                                The state geometry GeoJSON file is sourced from the data from <a href="https://github.com/jakobzhao/geog328/blob/main/labs/lab04/assets/state_data.geojson">GEOG 328 Lab 4</a>.
+                            </p>
+                        <h3> Applied Libraries </h3>
+                            <ul>
+                                <li><a href="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css">MapboxGL CSS</a>,</li>
+                                <li><a href="https://docs.mapbox.com/mapbox-gl-js/api/">MapboxGL JS</a>,</li>
+                                <li><a href="https://docs.mapbox.com/mapbox-gl-js/api/">Mapbox style overlay</a> for the base map,</li>
+                                <li><a href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js">ChartJS</a> for interactive charts,</li>
+                                <li><a href="https://fontawesome.com/">Font Awesome</a> for icons, and</li>
+                                <li><a href="https://github.com/">Github</a> for static site hosting service</li>
+                            </ul>
+                    </div>
+                </div>    
+            </div>
+            <div id="map-container">
+                <div id="map"></div>
+                <div class='map-overlay' id='legend'> <p>Positive Cases </p> </div>
+                <a href="javascript:void(0)" id="openbtn">
+                    <i class="fa fa-bars" onclick="openNav()"></i>
+                </a>
+            </div>
+            <div id="side-container">
+                <a href="javascript:void(0)" id="closebtn" onclick="closeNav()">
+                    <i class="fa-solid fa-xmark"></i>
+                </a>
+                <div id='features'>
+                    <h2><b>2024 Internet Access Seattle Area</b></h2>
+                    <div id='text-description'>
+                        <p>Click on a Neighborhood!</p>
+                    </div>
+                </div>
+                <div id="chart-container">
+                    <canvas id="line-chart"></canvas>
+                </div> 
+                <div id="side-panel">
+                    <h3>Internet Access Data by Neighborhood</h3>
+                    <table>
+                        <tr> <!--FIX THIS WHEN HAVE CLEAN DATA!!!-->
+                            <th>State <i id="name-button" class="fa fa-fw fa-sort"></i></th>
+                            <th>Deaths <i id="deaths-button" class="fa fa-fw fa-sort"></i></th>
+                            <th>Type A <i id="type-a-button" class="fa fa-fw fa-sort"></i></th>
+                            <th>Type B <i id="type-b-button" class="fa fa-fw fa-sort"></i></th>
+                        </tr>
+                    </table>
                 </div>
             </div>
-            <div class='map-overlay' id='legend'></div>
-        </header>
-        <main>
-            
         </main>
         <script src="js/main.js"></script>
     </body>
