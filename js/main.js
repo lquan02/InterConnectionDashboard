@@ -7,8 +7,8 @@ const map = new mapboxgl.Map({
     zoom: 10.2, // starting zoom
     maxBounds: [
         // Define the bounds within which the user can pan the map
-        [-123.0, 47.0], // Southwest coordinates
-        [-121.0, 49.0]  // Northeast coordinates
+        [-122.7, 47.4], // Southwest coordinates
+        [-122.0, 47.9]  // Northeast coordinates
     ],
     center: [-122.33359685339107, 47.61195411777029] // starting center
 });
