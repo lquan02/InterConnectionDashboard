@@ -225,8 +225,8 @@ async function geojsonFetch() {
         // Append the legend item to the legend
         legend.appendChild(legendItem);
 
-        nationalFeature = state_data.features.find(feature => feature.properties.STATE === 'National');
-        document.getElementById('text-description').innerHTML = `<h3>${nationalFeature.properties.STATE}</h3>`;
+        nationalFeature = state_data.features.find(feature => feature.properties.CRA_NAM === 'National');
+        document.getElementById('text-description').innerHTML = `<h3>${nationalFeature.properties.CRA_NAM}</h3>`;
         document.getElementById('text-description').innerHTML += `<p><strong><em>${nationalFeature.properties.TOTAL_A + nationalFeature.properties.TOTAL_B}</strong> positive cases</em> | <strong><em>${nationalFeature.properties.DEATH}</strong> deaths</em></p>`;    });
 });
     let hoveredPolygonId = null;
