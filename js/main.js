@@ -19,7 +19,7 @@ map.addControl(new mapboxgl.NavigationControl(), 'top-left');
 let weekly_data;
 
 async function state_weekly() {
-    const response = await fetch("data/map.json");
+    const response = await fetch("data/cleaned_final_merged_data.geojson");
     weekly_data = await response.json();
     showLineChartPopup('National');
 }
