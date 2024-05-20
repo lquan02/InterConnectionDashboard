@@ -1,4 +1,4 @@
-// initialize basemmap
+// initialize basemap
 mapboxgl.accessToken = 'pk.eyJ1IjoiamFrb2J6aGFvIiwiYSI6ImNpcms2YWsyMzAwMmtmbG5icTFxZ3ZkdncifQ.P9MBej1xacybKcDN_jehvw';
 
 const map = new mapboxgl.Map({
@@ -16,318 +16,166 @@ const map = new mapboxgl.Map({
 map.addControl(new mapboxgl.NavigationControl(), 'top-left');
 
 // Declare a variable to store the state data
-let weekly_data;
+let geojson_data;
 
-async function state_weekly() {
+async function fetchData() {
     const response = await fetch('data/map.geojson');
-    weekly_data = await response.json();
-    showLineChartPopup('National');
+    geojson_data = await response.json();
+    loadMapData();
 }
-state_weekly()
+fetchData();
 
-// Function to create a line chart pop-up
-function showLineChartPopup(stateName) {
-    // Extract x and y data for the chart
-    let xData = [];
-    let yData_D = [];
-    let yData_A = [];
-    let yData_B = [];
-    let i = 0;
-
-    for(let key in weekly_data[stateName]){
-        xData[i] = weekly_data[stateName][key]['WEEK'];
-        yData_D[i] = weekly_data[stateName][key]['DEATHS'];
-        yData_A[i] = weekly_data[stateName][key]['TOTAL_A'];
-        yData_B[i] = weekly_data[stateName][key]['TOTAL_B'];
-        i++;
-      }
-    
-    const ctx = document.getElementById('line-chart').getContext('2d');
-    if (window.myLineChart) {
-        // Destroy the existing chart
-        window.myLineChart.destroy();
-    }
-
-    window.myLineChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: xData,
-            datasets: [
-                {
-                    label: 'Death cases',
-                    data: yData_D,
-                    borderColor: 'rgba(207, 8, 8, 0.7)',
-                    backgroundColor: 'rgba(207, 8, 8, 0.5)',
-                    borderWidth: 1.5,
-                },
-                {
-                    label: 'Type A',
-                    data: yData_A,
-                    borderColor: 'rgba(8, 207, 135, 1)',
-                    backgroundColor: 'rgba(8, 207, 135, 0.5)',
-                    borderWidth: 1.5,
-                },
-                {
-                    label: 'Type B',
-                    data: yData_B,
-                    borderColor: 'rgba(238, 146, 0, 1)',
-                    backgroundColor: 'rgba(238, 146, 0, 0.5)',
-                    borderWidth: 1.5,
-                }
-            ],
-        },
-        options: {
-            responsive: true,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
-            scales: {
-                xAxes: {
-                    title: {
-                        display: true,
-                        text: 'Week',
-                        font: {
-                            size: 12,
-                        }
-                    }
-                },
-                y: {
-                    min: 0,
-                }
-            },
-            stacked: false,
-            plugins: {
-                title: {
-                    display: true,
-                    text: stateName + ' Weekly Data',
-                    font: {
-                        size: 18,
-                      }
-                }
-            },
-            legend: {display: true},
-        },
-    });
-}
-
-let nationalFeature;
-// load data and add as layer
-async function geojsonFetch() {
-    let response = await fetch('data/map.geojson');
-    let state_data = await response.json();
-
-    map.on('load', function loadingData() {
-        map.addSource('state_data', {
+function loadMapData() {
+    map.on('load', function () {
+        map.addSource('geojson_data', {
             type: 'geojson',
-            data: state_data
+            data: geojson_data
         });
 
         map.addLayer({
-            'id': 'state_data_layer',
+            'id': 'geojson_data_layer',
             'type': 'fill',
-            'source': 'state_data',
+            'source': 'geojson_data',
             'paint': {
                 'fill-color': [
                     'step',      // use step expression to provide fill color based on values
-                    
-                    ['+', ['get', 'TOTAL_A'], ['get', 'TOTAL_B']],  // get the total positive cases from the data
-                    
-                    '#888888',   
-                    0.01,          // if total cases < 0.01 (which means 0 cases or N/A)
-                    
-                    '#FED976',   
-                    1000,          // if total cases 1-1000 (which means 0 cases or N/A)
-                    
-                    '#FEB24C',   
-                    5000,          // if total cases 1000-5000 (which means 0 cases or N/A)
-                    
-                    '#FD8D3C',   
-                    10000,         // if total cases 5000-10000 (which means 0 cases or N/A)
-                    
-                    '#FC4E2A',   
-                    20000,         // if total cases 10000-20000 (which means 0 cases or N/A)
-                    
-                    '#E31A1C',   
-                    50000,         // if total cases 20000-50000 (which means 0 cases or N/A)
-                    
-                    "#800026"    // use color #800026 if total cases >= 50000
+                    ['get', 'SDQuintile'],  // get the SDQuintile from the data
+                    '#f7f7f7',
+                    1, '#d9f0a3',
+                    2, '#addd8e',
+                    3, '#78c679',
+                    4, '#31a354',
+                    5, '#006837'
                 ],
-                'fill-opacity': [
-                    'case',
-                    ['boolean', ['feature-state', 'hover'], false],
-                    0.8,
-                    0.5
-                ]
+                'fill-opacity': 0.7
             }
         });
+
         map.addLayer({
-            'id': 'state_borders',
+            'id': 'geojson_data_borders',
             'type': 'line',
-            'source': 'state_data',
+            'source': 'geojson_data',
             'layout': {},
             'paint': {
                 'line-color': "#000000",
-                'line-width': [
-                    'case',
-                    ['boolean', ['feature-state', 'clicked'], false],
-                    2.5,
-                    1
-                ],
-                'line-opacity': [
-                    'case',
-                    ['boolean', ['feature-state', 'clicked'], false],
-                    0.5,
-                    0.1
-                ]
+                'line-width': 1
             }
         });
-        const layers = [
-            '0',
-            '<1000',
-            '1,000',
-            '5,000',
-            '10,000',
-            '20,000',
-            '50,000+'
-        ];
-        const colors = [
-            '#888888',
-            '#FED97670',
-            '#FEB24C70',
-            '#FD8D3C70',
-            '#FC4E2A70',
-            '#E31A1C70',
-            '#80002670'
-        ];
-        // create legend
-        const legend = document.getElementById('legend');
 
-        // Loop through layers to create legend items
-        layers.forEach((layer, i) => {
-        // Create a container for each legend item
-        const legendItem = document.createElement('div');
-        legendItem.className = 'legend-item';
+        let hoveredPolygonId = null;
+        map.on('mousemove', 'geojson_data_layer', (e) => {
+            if (e.features.length > 0) {
+                if (hoveredPolygonId !== null) {
+                    map.setFeatureState(
+                        { source: 'geojson_data', id: hoveredPolygonId },
+                        { hover: false }
+                    );
+                }
+                hoveredPolygonId = e.features[0].id;
+                map.setFeatureState(
+                    { source: 'geojson_data', id: hoveredPolygonId },
+                    { hover: true }
+                );
 
-        // Create the color block
-        const key = document.createElement('div');
-        key.className = 'legend-key';
-        key.style.backgroundColor = colors[i];
+                const feature = e.features[0];
+                const coordinates = feature.geometry.coordinates.slice();
+                const { CRA_NAM, SDQuintile, MedianHHIncome } = feature.properties;
 
-        // Create the label text
-        const label = document.createElement('span');
-        label.innerText = layer;
-        key.appendChild(label);
+                // Ensure that if the map is zoomed out such that multiple
+                // copies of the feature are visible, the popup appears
+                // over the copy being pointed to.
+                while (Math.abs(e.lngLat.lng - coordinates[0][0][0]) > 180) {
+                    coordinates[0][0][0] += e.lngLat.lng > coordinates[0][0][0] ? 360 : -360;
+                }
 
-        // Append the color block to the legend item container
-        legendItem.appendChild(key);
+                new mapboxgl.Popup()
+                    .setLngLat(e.lngLat)
+                    .setHTML(`
+                        <h3>${CRA_NAM}</h3>
+                        <p>SDQuintile: ${SDQuintile}</p>
+                        <p>Median Household Income: $${MedianHHIncome}</p>
+                    `)
+                    .addTo(map);
+            }
+        });
 
-        // Append the legend item to the legend
-        legend.appendChild(legendItem);
-
-        nationalFeature = state_data.features.find(feature => feature.properties.CRA_NAM === 'National');
-        document.getElementById('text-description').innerHTML = `<h3>${nationalFeature.properties.CRA_NAM}</h3>`;
-        document.getElementById('text-description').innerHTML += `<p><strong><em>${nationalFeature.properties.TOTAL_A + nationalFeature.properties.TOTAL_B}</strong> positive cases</em> | <strong><em>${nationalFeature.properties.DEATH}</strong> deaths</em></p>`;    });
-});
-    let hoveredPolygonId = null;
-    map.on('mousemove', 'state_data_layer', (e) => {
-        if (e.features.length > 0) {
+        map.on('mouseleave', 'geojson_data_layer', () => {
             if (hoveredPolygonId !== null) {
                 map.setFeatureState(
-                    { source: 'state_data', id: hoveredPolygonId },
+                    { source: 'geojson_data', id: hoveredPolygonId },
                     { hover: false }
                 );
             }
-            hoveredPolygonId = e.features[0].id;
-            map.setFeatureState(
-                { source: 'state_data', id: hoveredPolygonId },
-                { hover: true }
-            );
-        }
-    });
-    
-    // When the mouse leaves the state-fill layer, update the feature state of the
-    // previously hovered feature.
-    map.on('mouseleave', 'state_data_layer', () => {
-        if (hoveredPolygonId !== null) {
-            map.setFeatureState(
-                { source: 'state_data', id: hoveredPolygonId },
-                { hover: false }
-            );
-        }
-        hoveredPolygonId = null;
-    });
-
-    let polygonID = null;
-    map.on('click', ({point}) => {
-      
-        const state = map.queryRenderedFeatures(point, {
-            layers: ['state_data_layer']
+            hoveredPolygonId = null;
         });
-        if (state.length) {
-            // If a state is clicked, show information for that state
-            document.getElementById('text-description').innerHTML = `<h3>${state[0].properties.STATE}</h3>`;
-            document.getElementById('text-description').innerHTML += `<p><strong><em>${state[0].properties.TOTAL_A + state[0].properties.TOTAL_B}</strong> positive cases</em> | <strong><em>${state[0].properties.DEATH}</strong> deaths</em></p>`;
-            showLineChartPopup(state[0].properties.STATE);
-            
-            if (polygonID) {
-                map.removeFeatureState({
-                    source: "state_data",
-                    id: polygonID
+
+        let polygonID = null;
+        map.on('click', ({ point }) => {
+            const state = map.queryRenderedFeatures(point, {
+                layers: ['geojson_data_layer']
+            });
+            if (state.length) {
+                const feature = state[0];
+                document.getElementById('text-description').innerHTML = `
+                    <h3>${feature.properties.CRA_NAM}</h3>
+                    <p>SDQuintile: ${feature.properties.SDQuintile}</p>
+                    <p>Median Household Income: $${feature.properties.MedianHHIncome}</p>
+                `;
+
+                if (polygonID) {
+                    map.removeFeatureState({
+                        source: "geojson_data",
+                        id: polygonID
+                    });
+                }
+
+                polygonID = state[0].id;
+
+                map.setFeatureState({
+                    source: 'geojson_data',
+                    id: polygonID,
+                }, {
+                    clicked: true
                 });
             }
+        });
 
-            polygonID = state[0].id;
+        const layers = [
+            'No Data',
+            '1 (Lowest)',
+            '2',
+            '3',
+            '4',
+            '5 (Highest)'
+        ];
+        const colors = [
+            '#f7f7f7',
+            '#d9f0a3',
+            '#addd8e',
+            '#78c679',
+            '#31a354',
+            '#006837'
+        ];
 
-            map.setFeatureState({
-                    source: 'state_data',
-                    id: polygonID,
-                }, {
-                clicked: true
-            });
-        } else {
-            // If clicked outside of a state, show national data
-            document.getElementById('text-description').innerHTML = `<h3>${nationalFeature.properties.STATE}</h3>`;
-            document.getElementById('text-description').innerHTML += `<p><strong><em>${nationalFeature.properties.TOTAL_A + nationalFeature.properties.TOTAL_B}</strong> positive cases</em> | <strong><em>${nationalFeature.properties.DEATH}</strong> deaths</em></p>`;
-            showLineChartPopup('National');
-            
-            map.setFeatureState({
-                    source: 'state_data',
-                    id: polygonID,
-                }, {
-                clicked: false
-            }); 
-        }
-    });
-    
-    let table = document.getElementsByTagName("table")[0];
-    let row, cell1, cell2, cell3, cell4;
-    for (let i = 0; i < state_data.features.length-1; i++) {
-        row = table.insertRow(-1);
-        cell1 = row.insertCell(0);
-        cell2 = row.insertCell(1);
-        cell3 = row.insertCell(2);
-        cell4 = row.insertCell(3);
-        cell1.innerHTML = state_data.features[i].properties.STATE;
-        cell2.innerHTML = state_data.features[i].properties.DEATH;
-        cell3.innerHTML = state_data.features[i].properties.TOTAL_A;
-        cell4.innerHTML = state_data.features[i].properties.TOTAL_B;
-    }
-  
-    let clicked = [false, false, false, false];
-    document.getElementById('name-button').addEventListener('click', function(){
-        sortToggle(clicked, 0);
-    });
-    document.getElementById('deaths-button').addEventListener('click', function(){
-        sortToggle(clicked, 1);
-    });
-    document.getElementById('type-a-button').addEventListener('click', function(){
-        sortToggle(clicked, 2);
-    });
-    document.getElementById('type-b-button').addEventListener('click', function(){
-        sortToggle(clicked, 3);
+        const legend = document.getElementById('legend');
+        layers.forEach((layer, i) => {
+            const legendItem = document.createElement('div');
+            legendItem.className = 'legend-item';
+
+            const key = document.createElement('div');
+            key.className = 'legend-key';
+            key.style.backgroundColor = colors[i];
+
+            const label = document.createElement('span');
+            label.innerText = layer;
+            key.appendChild(label);
+
+            legendItem.appendChild(key);
+            legend.appendChild(legendItem);
+        });
     });
 }
+
 // Call the function to fetch GeoJSON data and load the map
 geojsonFetch();
 
