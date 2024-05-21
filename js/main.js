@@ -4,7 +4,7 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiamFrb2J6aGFvIiwiYSI6ImNpcms2YWsyMzAwMmtmbG5ic
 const map = new mapboxgl.Map({
     container: 'map', // container ID
     style: 'mapbox://styles/mapbox/light-v10', // style URL
-    zoom: 10.2, // starting zoom
+    zoom: 8, // starting zoom
     maxBounds: [
         // Define the bounds within which the user can pan the map
         [-122.7, 47.4], // Southwest coordinates
@@ -63,7 +63,7 @@ function loadMapData() {
         });
 
         let hoveredPolygonId = null;
-        map.on('mousemove', 'geojson_data_layer', (e) => {
+        map.on('click', 'geojson_data_layer', (e) => {
             if (e.features.length > 0) {
                 if (hoveredPolygonId !== null) {
                     map.setFeatureState(
