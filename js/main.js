@@ -16,6 +16,10 @@ map.addControl(new mapboxgl.NavigationControl(), 'top-left');
 
 // Declare a variable to store the state data
 let geojson_data;
+let popup = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: false
+});
 
 async function fetchData() {
     const response = await fetch('data/map.geojson');
@@ -79,6 +83,7 @@ function loadMapData() {
             }
         });
 
+        // Add the mouseleave event handler
         map.on('mouseleave', 'geojson_data_layer', () => {
             if (hoveredPolygonId !== null) {
                 map.setFeatureState(
@@ -90,37 +95,54 @@ function loadMapData() {
         });
 
         let polygonID = null;
-        let popup = new mapboxgl.Popup({
-            closeButton: false,
-            closeOnClick: false
+
+        // Add the click event handler
+        map.on('click', 'geojson_data_layer', (e) => {
+            const state = map.queryRenderedFeatures(e.point, {
+                layers: ['geojson_data_layer']
+            });
+            if (state.length) {
+                const feature = state[0];
+                document.getElementById('text-description').innerHTML = `
+                    <h3>${feature.properties.CRA_NAM}</h3>
+                    <p>Social Economic Risk Level: ${feature.properties.SDQuintile}</p>
+                    <p>Median Household Income: $${feature.properties.MedianHHIncome}</p>
+                `;
+
+                if (polygonID) {
+                    map.setFeatureState(
+                        { source: "geojson_data", id: polygonID },
+                        { clicked: false }
+                    );
+                }
+
+                polygonID = state[0].id;
+
+                map.setFeatureState({
+                    source: 'geojson_data',
+                    id: polygonID,
+                }, {
+                    clicked: true
+                });
+            }
         });
 
-        map.on('click', 'geojson_data_layer', (e) => {
-            const features = e.features[0];
-            const { CRA_NAM, SDQuintile, MedianHHIncome } = features.properties;
+        // Add a click event listener to the map to close the popup when clicking outside a feature
+        map.on('click', (e) => {
+            const features = map.queryRenderedFeatures(e.point, {
+                layers: ['geojson_data_layer']
+            });
 
-            if (polygonID) {
-                map.setFeatureState(
-                    { source: 'geojson_data', id: polygonID },
-                    { clicked: false }
-                );
+            if (!features.length) {
+                popup.remove();
+                if (polygonID) {
+                    map.setFeatureState(
+                        { source: 'geojson_data', id: polygonID },
+                        { clicked: false }
+                    );
+                    polygonID = null;
+                }
             }
-
-            polygonID = features.id;
-
-            map.setFeatureState(
-                { source: 'geojson_data', id: polygonID },
-                { clicked: true }
-            );
-
-            popup
-                .setLngLat(e.lngLat)
-                .setHTML(`
-                    <h3>${CRA_NAM}</h3>
-                    <p>SDQuintile: ${SDQuintile}</p>
-                    <p>Median Household Income: $${MedianHHIncome}</p>
-                `)
-                .addTo(map);
         });
 
         const layers = [
