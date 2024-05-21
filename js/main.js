@@ -6,7 +6,6 @@ const map = new mapboxgl.Map({
     style: 'mapbox://styles/mapbox/light-v10', // style URL
     zoom: 8, // starting zoom
     maxBounds: [
-        // Define the bounds within which the user can pan the map
         [-122.7, 47.4], // Southwest coordinates
         [-122.0, 47.9]  // Northeast coordinates
     ],
@@ -22,6 +21,7 @@ async function fetchData() {
     const response = await fetch('data/map.geojson');
     geojson_data = await response.json();
     loadMapData();
+    populateTable();
 }
 fetchData();
 
@@ -40,12 +40,12 @@ function loadMapData() {
                 'fill-color': [
                     'step',      // use step expression to provide fill color based on values
                     ['get', 'SDQuintile'],  // get the SDQuintile from the data
-                    '#f7f7f7',
-                    1, '#d9f0a3',
-                    2, '#addd8e',
-                    3, '#78c679',
-                    4, '#31a354',
-                    5, '#006837'
+                    '#808080',
+                    1, '#f8f8f8',
+                    2, '#f8baba',
+                    3, '#f87c7c',
+                    4, '#f83e3e',
+                    5, '#f80000'
                 ],
                 'fill-opacity': 0.7
             }
@@ -63,7 +63,7 @@ function loadMapData() {
         });
 
         let hoveredPolygonId = null;
-        map.on('click', 'geojson_data_layer', (e) => {
+        map.on('mousemove', 'geojson_data_layer', (e) => {
             if (e.features.length > 0) {
                 if (hoveredPolygonId !== null) {
                     map.setFeatureState(
@@ -76,26 +76,6 @@ function loadMapData() {
                     { source: 'geojson_data', id: hoveredPolygonId },
                     { hover: true }
                 );
-
-                const feature = e.features[0];
-                const coordinates = feature.geometry.coordinates.slice();
-                const { CRA_NAM, SDQuintile, MedianHHIncome } = feature.properties;
-
-                // Ensure that if the map is zoomed out such that multiple
-                // copies of the feature are visible, the popup appears
-                // over the copy being pointed to.
-                while (Math.abs(e.lngLat.lng - coordinates[0][0][0]) > 180) {
-                    coordinates[0][0][0] += e.lngLat.lng > coordinates[0][0][0] ? 360 : -360;
-                }
-
-                new mapboxgl.Popup()
-                    .setLngLat(e.lngLat)
-                    .setHTML(`
-                        <h3>${CRA_NAM}</h3>
-                        <p>SDQuintile: ${SDQuintile}</p>
-                        <p>Median Household Income: $${MedianHHIncome}</p>
-                    `)
-                    .addTo(map);
             }
         });
 
@@ -110,34 +90,37 @@ function loadMapData() {
         });
 
         let polygonID = null;
-        map.on('click', ({ point }) => {
-            const state = map.queryRenderedFeatures(point, {
-                layers: ['geojson_data_layer']
-            });
-            if (state.length) {
-                const feature = state[0];
-                document.getElementById('text-description').innerHTML = `
-                    <h3>${feature.properties.CRA_NAM}</h3>
-                    <p>SDQuintile: ${feature.properties.SDQuintile}</p>
-                    <p>Median Household Income: $${feature.properties.MedianHHIncome}</p>
-                `;
+        let popup = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false
+        });
 
-                if (polygonID) {
-                    map.removeFeatureState({
-                        source: "geojson_data",
-                        id: polygonID
-                    });
-                }
+        map.on('click', 'geojson_data_layer', (e) => {
+            const features = e.features[0];
+            const { CRA_NAM, SDQuintile, MedianHHIncome } = features.properties;
 
-                polygonID = state[0].id;
-
-                map.setFeatureState({
-                    source: 'geojson_data',
-                    id: polygonID,
-                }, {
-                    clicked: true
-                });
+            if (polygonID) {
+                map.setFeatureState(
+                    { source: 'geojson_data', id: polygonID },
+                    { clicked: false }
+                );
             }
+
+            polygonID = features.id;
+
+            map.setFeatureState(
+                { source: 'geojson_data', id: polygonID },
+                { clicked: true }
+            );
+
+            popup
+                .setLngLat(e.lngLat)
+                .setHTML(`
+                    <h3>${CRA_NAM}</h3>
+                    <p>SDQuintile: ${SDQuintile}</p>
+                    <p>Median Household Income: $${MedianHHIncome}</p>
+                `)
+                .addTo(map);
         });
 
         const layers = [
@@ -149,12 +132,12 @@ function loadMapData() {
             '5 (Highest)'
         ];
         const colors = [
-            '#f7f7f7',
-            '#d9f0a3',
-            '#addd8e',
-            '#78c679',
-            '#31a354',
-            '#006837'
+            '#808080',
+            '#f8f8f8',
+            '#f8baba',
+            '#f87c7c',
+            '#f83e3e',
+            '#f80000'
         ];
 
         const legend = document.getElementById('legend');
@@ -176,8 +159,32 @@ function loadMapData() {
     });
 }
 
+function populateTable() {
+    const table = document.querySelector("#side-panel table");
+
+    geojson_data.features.forEach(feature => {
+        const row = document.createElement('tr');
+        const areaCell = document.createElement('td');
+        const riskFactorCell = document.createElement('td');
+        const meanIncomeCell = document.createElement('td');
+        const devicesCell = document.createElement('td');
+
+        areaCell.textContent = feature.properties.CRA_NAM;
+        riskFactorCell.textContent = feature.properties.SDQuintile;
+        meanIncomeCell.textContent = feature.properties.MedianHHIncome;
+        devicesCell.textContent = ''; // Placeholder for device data
+
+        row.appendChild(areaCell);
+        row.appendChild(riskFactorCell);
+        row.appendChild(meanIncomeCell);
+        row.appendChild(devicesCell);
+
+        table.appendChild(row);
+    });
+}
+
 // Call the function to fetch GeoJSON data and load the map
-geojsonFetch();
+fetchData();
 
 function sortToggle(arr, num){
     if(!arr[num]){

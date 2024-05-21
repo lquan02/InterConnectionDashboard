@@ -240,7 +240,6 @@ a:hover {
     height: max-content;
 }
 
-
 .center {
     margin:auto;
 }
@@ -293,7 +292,6 @@ tr:nth-child(even) {
     #side-container {
         display: none;
     }
-
     #legend {
         flex-direction: column;
     }
