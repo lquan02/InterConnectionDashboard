@@ -4,9 +4,9 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiamFrb2J6aGFvIiwiYSI6ImNpcms2YWsyMzAwMmtmbG5ic
 const map = new mapboxgl.Map({
     container: 'map', // container ID
     style: 'mapbox://styles/mapbox/light-v10', // style URL
-    zoom: 8, // starting zoom
+    zoom: 9, // starting zoom
     maxBounds: [
-        [-122.7, 47.4], // Southwest coordinates
+        [-122.7, 47.33], // Southwest coordinates
         [-122.0, 47.9]  // Northeast coordinates
     ],
     center: [-122.33359685339107, 47.61195411777029] // starting center
@@ -104,9 +104,9 @@ function loadMapData() {
             if (state.length) {
                 const feature = state[0];
                 document.getElementById('text-description').innerHTML = `
-                    <h3>${feature.properties.CRA_NAM}</h3>
+                    <h3>${feature.properties.TractNameLong}</h3>
                     <p>Social Economic Risk Level: ${feature.properties.SDQuintile}</p>
-                    <p>Median Household Income: $${feature.properties.MedianHHIncome}</p>
+                    <p>Total Population: ${feature.properties.TotalPop}</p>
                 `;
 
                 if (polygonID) {
@@ -191,10 +191,10 @@ function populateTable() {
         const meanIncomeCell = document.createElement('td');
         const devicesCell = document.createElement('td');
 
-        areaCell.textContent = feature.properties.CRA_NAM;
+        areaCell.textContent = feature.properties.TRACTCE;
         riskFactorCell.textContent = feature.properties.SDQuintile;
-        meanIncomeCell.textContent = feature.properties.MedianHHIncome;
-        devicesCell.textContent = ''; // Placeholder for device data
+        meanIncomeCell.textContent = feature.properties.TotalPop;
+        devicesCell.textContent = feature.properties.HHMedianDeviceCount;
 
         row.appendChild(areaCell);
         row.appendChild(riskFactorCell);
