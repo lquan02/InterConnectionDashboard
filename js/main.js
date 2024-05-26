@@ -1,9 +1,8 @@
 // initialize basemap
 mapboxgl.accessToken = 'pk.eyJ1IjoiamFrb2J6aGFvIiwiYSI6ImNpcms2YWsyMzAwMmtmbG5icTFxZ3ZkdncifQ.P9MBej1xacybKcDN_jehvw';
-
 const map = new mapboxgl.Map({
     container: 'map', // container ID
-    style: 'mapbox://styles/mapbox/light-v10', // style URL
+    style: 'mapbox://styles/mapbox/dark-v11', // style URL
     zoom: 9, // starting zoom
     maxBounds: [
         [-122.7, 47.33], // Southwest coordinates
@@ -14,175 +13,120 @@ const map = new mapboxgl.Map({
 
 map.addControl(new mapboxgl.NavigationControl(), 'top-left');
 
-// Declare a variable to store the state data
 let geojson_data;
-let popup = new mapboxgl.Popup({
-    closeButton: false,
-    closeOnClick: false
-});
+let sortStates = [false, false, false, false]; // Sorting states for each column
 
 async function fetchData() {
-    const response = await fetch('data/map.geojson');
-    geojson_data = await response.json();
-    loadMapData();
-    populateTable();
+    try {
+        const response = await fetch('data/basemap.geojson');
+        if (!response.ok) throw new Error('Network response was not ok.');
+        geojson_data = await response.json();
+        setupMapLayers();  // Call setupMapLayers to ensure layers are added correctly
+        populateTable();   // Populate table after data is fetched
+    } catch (error) {
+        console.error("Failed to fetch data:", error);
+    }
 }
 fetchData();
 
-function loadMapData() {
-    map.on('load', function () {
+function setupMapLayers() {
+    if (!map.isStyleLoaded()) {
+        map.on('load', addOrUpdateLayers);
+    } else {
+        addOrUpdateLayers();
+    }
+}
+
+function addOrUpdateLayers() {
+    if (map.getSource('geojson_data')) {
+        map.getSource('geojson_data').setData(geojson_data);
+    } else {
         map.addSource('geojson_data', {
             type: 'geojson',
             data: geojson_data
         });
+    }
 
+    if (!map.getLayer('geojson_data_layer')) {
         map.addLayer({
             'id': 'geojson_data_layer',
             'type': 'fill',
             'source': 'geojson_data',
             'paint': {
                 'fill-color': [
-                    'step',      // use step expression to provide fill color based on values
-                    ['get', 'SDQuintile'],  // get the SDQuintile from the data
-                    '#808080',
-                    1, '#f8f8f8',
-                    2, '#f8baba',
-                    3, '#f87c7c',
-                    4, '#f83e3e',
-                    5, '#f80000'
+                    'step',
+                    ['get', 'SDQuintile'],
+                    '#808080', 1, '#f8f8f8', 2, '#f8baba', 3, '#f87c7c', 4, '#f83e3e', 5, '#f80000'
                 ],
                 'fill-opacity': 0.7
             }
         });
+    }
 
-        map.addLayer({
-            'id': 'geojson_data_borders',
-            'type': 'line',
-            'source': 'geojson_data',
-            'layout': {},
-            'paint': {
-                'line-color': "#000000",
-                'line-width': 1
-            }
-        });
+    // Adding border layer for clarity
+    map.addLayer({
+        'id': 'geojson_data_borders',
+        'type': 'line',
+        'source': 'geojson_data',
+        'layout': {},
+        'paint': {
+            'line-color': '#000000',
+            'line-width': 1
+        }
+    });
 
-        let hoveredPolygonId = null;
-        map.on('mousemove', 'geojson_data_layer', (e) => {
-            if (e.features.length > 0) {
-                if (hoveredPolygonId !== null) {
-                    map.setFeatureState(
-                        { source: 'geojson_data', id: hoveredPolygonId },
-                        { hover: false }
-                    );
-                }
-                hoveredPolygonId = e.features[0].id;
-                map.setFeatureState(
-                    { source: 'geojson_data', id: hoveredPolygonId },
-                    { hover: true }
-                );
-            }
-        });
+    attachEventHandlers();
+}
 
-        // Add the mouseleave event handler
-        map.on('mouseleave', 'geojson_data_layer', () => {
-            if (hoveredPolygonId !== null) {
-                map.setFeatureState(
-                    { source: 'geojson_data', id: hoveredPolygonId },
-                    { hover: false }
-                );
-            }
-            hoveredPolygonId = null;
-        });
+function attachEventHandlers() {
+    map.on('click', 'geojson_data_layer', function (e) {
+        if (e.features.length > 0) {
+            const feature = e.features[0];
+            const descriptionHTML = `
+                <h3>${feature.properties.TractNameLong + " | " + feature.properties.NameDataSet_CRA_NAM}</h3>
+                <p>Social Economic Risk Level: ${feature.properties.SDQuintile}</p>
+                <p>Total Population: ${feature.properties.TotalPop}</p>
+            `;
+            document.getElementById('text-description').innerHTML = descriptionHTML;
+        }
+    });
 
-        let polygonID = null;
-
-        // Add the click event handler
-        map.on('click', 'geojson_data_layer', (e) => {
-            const state = map.queryRenderedFeatures(e.point, {
-                layers: ['geojson_data_layer']
-            });
-            if (state.length) {
-                const feature = state[0];
-                document.getElementById('text-description').innerHTML = `
-                    <h3>${feature.properties.TractNameLong}</h3>
-                    <p>Social Economic Risk Level: ${feature.properties.SDQuintile}</p>
-                    <p>Total Population: ${feature.properties.TotalPop}</p>
-                `;
-
-                if (polygonID) {
-                    map.setFeatureState(
-                        { source: "geojson_data", id: polygonID },
-                        { clicked: false }
-                    );
-                }
-
-                polygonID = state[0].id;
-
-                map.setFeatureState({
-                    source: 'geojson_data',
-                    id: polygonID,
-                }, {
-                    clicked: true
-                });
-            }
-        });
-
-        // Add a click event listener to the map to close the popup when clicking outside a feature
-        map.on('click', (e) => {
-            const features = map.queryRenderedFeatures(e.point, {
-                layers: ['geojson_data_layer']
-            });
-
-            if (!features.length) {
-                popup.remove();
-                if (polygonID) {
-                    map.setFeatureState(
-                        { source: 'geojson_data', id: polygonID },
-                        { clicked: false }
-                    );
-                    polygonID = null;
-                }
-            }
-        });
-
-        const layers = [
-            'No Data',
-            '1 (Lowest)',
-            '2',
-            '3',
-            '4',
-            '5 (Highest)'
-        ];
-        const colors = [
-            '#808080',
-            '#f8f8f8',
-            '#f8baba',
-            '#f87c7c',
-            '#f83e3e',
-            '#f80000'
-        ];
-
-        const legend = document.getElementById('legend');
-        layers.forEach((layer, i) => {
-            const legendItem = document.createElement('div');
-            legendItem.className = 'legend-item';
-
-            const key = document.createElement('div');
-            key.className = 'legend-key';
-            key.style.backgroundColor = colors[i];
-
-            const label = document.createElement('span');
-            label.innerText = layer;
-            key.appendChild(label);
-
-            legendItem.appendChild(key);
-            legend.appendChild(legendItem);
-        });
+    map.on('mouseenter', 'geojson_data_layer', function () {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', 'geojson_data_layer', function () {
+        map.getCanvas().style.cursor = '';
     });
 }
 
+function setupLegend() {
+    const legend = document.getElementById('legend');
+    const riskLevels = [
+        { color: '#ffffff', label: 'Very Low' },
+        { color: '#f8baba', label: 'Low' },
+        { color: '#f87c7c', label: 'Medium' },
+        { color: '#f83e3e', label: 'High' },
+        { color: '#f80000', label: 'Very High' }
+    ];
+
+    riskLevels.forEach(level => {
+        const key = document.createElement('div');
+        key.className = 'legend-key';
+        key.style.backgroundColor = level.color;
+        key.innerHTML = level.label;
+
+        legend.appendChild(key);
+    });
+}
+
+// Assuming map is initialized and setupMapLayers is your function to setup map layers
+map.on('load', function() {
+    setupMapLayers();
+    setupLegend();
+});
+
 function populateTable() {
-    const table = document.querySelector("#side-panel table");
+    const table = document.querySelector("#side-panel table ");
 
     geojson_data.features.forEach(feature => {
         const row = document.createElement('tr');
@@ -191,7 +135,7 @@ function populateTable() {
         const meanIncomeCell = document.createElement('td');
         const devicesCell = document.createElement('td');
 
-        areaCell.textContent = feature.properties.TRACTCE;
+        areaCell.textContent = feature.properties.TractNameLong;
         riskFactorCell.textContent = feature.properties.SDQuintile;
         meanIncomeCell.textContent = feature.properties.TotalPop;
         devicesCell.textContent = feature.properties.HHMedianDeviceCount;
@@ -203,34 +147,43 @@ function populateTable() {
 
         table.appendChild(row);
     });
+
+    attachSortListeners();  // Attach listeners after the table is populated
 }
 
-// Call the function to fetch GeoJSON data and load the map
-fetchData();
+function attachSortListeners() {
+    const sortHeaders = document.querySelectorAll("#side-panel th");
+    sortHeaders.forEach((header, index) => {
+        header.addEventListener('click', () => {
+            sortToggle(sortStates, index);
+            updateSortIcons();
+        });
+    });
+}
 
-function sortToggle(arr, num){
-    if(!arr[num]){
-        sortTable(num, true);
-        arr[num] = true;
-    }else{
-        sortTable(num, false);
-        arr[num] = false;
-    }
+function updateSortIcons() {
+    const icons = document.querySelectorAll("#side-panel th i");
+    icons.forEach((icon, index) => {
+        icon.className = sortStates[index] ? 'fa fa-fw fa-sort-up' : 'fa fa-fw fa-sort-down';
+    });
+}
+
+function sortToggle(arr, num) {
+    arr[num] = !arr[num]; // Toggle the state
+    sortTable(num, arr[num]);
 }
 
 function sortTable(idx, isAsc) {
     let table = document.getElementsByTagName("table")[0];
     let tbody = table.getElementsByTagName('tbody')[0];
-    //convert to arr for sorting
     let arr = Array.from(table.rows);
 
-    //preserve top row so it doesn't get sorted
     let toprow = arr[0];
     arr.shift();
     arr = quickSort(arr, idx, isAsc);
     arr.unshift(toprow);
 
-    while (tbody.firstChild){
+    while (tbody.firstChild) {
         tbody.removeChild(tbody.firstChild);
     }
     arr.forEach(row => tbody.appendChild(row));
@@ -246,26 +199,26 @@ const quickSort = (arr, idx, isAsc) => {
     for (let i = 1; i < arr.length; i++) {
         let x;
         let y;
-        if(idx === 0){
+        if (idx === 0) {
             x = arr[i].getElementsByTagName("td")[idx].innerHTML;
             y = pivot.getElementsByTagName("td")[idx].innerHTML;
-        }else{
+        } else {
             x = parseFloat(arr[i].getElementsByTagName("td")[idx].innerHTML);
             y = parseFloat(pivot.getElementsByTagName("td")[idx].innerHTML);
         }
-        if(isAsc){
+        if (isAsc) {
             if (x < y) {
                 leftArr.push(arr[i]);
             } else {
                 rightArr.push(arr[i]);
             }
-        }else{
+        } else {
             if (x > y) {
                 leftArr.push(arr[i]);
             } else {
                 rightArr.push(arr[i]);
-            } 
-        } 
+            }
+        }
     }
     return [...quickSort(leftArr, idx, isAsc), pivot, ...quickSort(rightArr, idx, isAsc)];
 };
