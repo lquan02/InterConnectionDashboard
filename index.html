@@ -16,13 +16,13 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
         <!-- Font awesome -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-        <title>2024 InterConnection Map</title>
+        <title>InterConnection Technology Access Map</title>
         <link rel="icon" type="image/x-icon" href="data/icicon.png">
     </head>
     <body>
         <header class="nav__bar">
             <div class="nav__content">
-                <a class="logo active" href="index.html">2024 InterConnection Internet Access</a>
+                <a class="logo active" href="index.html">InterConnection Technology Access Dashboard</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -64,6 +64,32 @@
                                 When most people think about Seattle, having access to different kinds of technology all around you might be something that people think of as normal or expected but the reality is that this is not the case for everyone. This is why our project's primary goal is to display where inequities exist across Seattle regarding access to laptops or tablets, personal and by household. By creating necessary visualizations, we can more succinctly represent where people lack access to the internet or devices and why this might be the case, whether it's due to a higher percentage of low-income households, a larger senior population, and/or other factors. These visualizations help spread awareness and further InterConnection's impact as a non-profit.
                                 <br><br>
                             </p>
+                        <h3><strong> Glossary </strong></h3>
+                        <p><strong>Area:</strong></p>
+                        <p>
+                            Represents the different areas in Seattle along with their associated Census Tract name and number.
+                        </p>
+                        
+                        <p><strong>Risk Factor:</strong></p>
+                        <p>
+                            Ranks census tracts based on an index of two equally weighted measures:
+                            <ul>
+                                <li>Income below 200% of poverty level</li>
+                                <li>Educational attainment less than a bachelor's degree</li>
+                            </ul>
+                        </p>
+                        
+                        <p><strong>Total Population:</strong></p>
+                        <p>
+                            Provides the most recent total population data available for each census tract location from the U.S. Census Bureau.
+                        </p>
+                        
+                        <p><strong>Median Number of Devices:</strong></p>
+                        <p>
+                            Represents the median number of devices per household, sourced from the Technology Access and Adaptation Survey of 2023 conducted by the city of Seattle.
+                        </p>
+                        
+                            
                     </div>
                 </div>
                 <div id = "acknowledge-popup">
@@ -76,11 +102,9 @@
                             <p> All the internet access, technology access and Adoption statistics are sourced from the link below:</p>
                                 <ul>
                                     <li><a href="https://data.seattle.gov/Community/Technology-Access-and-Adoption-Survey-2023/jddv-fz6y">Technology Access and Adoption Survey 2023</a></li>
-                                    <li><a href="https://data.seattle.gov/Community/Technology-Access-and-Adoption-Survey-2018/cz6d-tu92/about_data">Technology Access and Adoption Survey 2018</a></li>
-                                    <li><a href="https://kingcounty.maps.arcgis.com/apps/webappviewer/index.html?id=241e339bf8e143f1aa526153300000a1">King County WTD Social Vulnerability Index</a></li>
+                                    <li><a href="https://data.census.gov">United States Census Bureau</a></li>
+                                    <li><a href="https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::racial-and-social-equity-composite-index-current/about">Racial and Social Equity Composite Index Current</a></li>
                                     <li><a href="https://www.seattle.gov/tech/reports-and-data/about-digital-equity">Seattle IT - About Digital Equity</a></li>
-                                    <li><a href="https://data-seattlecitygis.opendata.arcgis.com/datasets/SeattleCityGIS::ifadashboarddata/about">Internet For All Dashboard Data (IFA data)</a></li>
-                                    <li><a href="https://seattle.gov/tech/reports-and-data/internet-for-all/internet-for-all-seattle-dashboards">Internet for All Seattle Dashboards</a></li>
                                 </ul>
                         <h3><strong>Applied Libraries</strong></h3>
                             <ul>
@@ -108,7 +132,7 @@
                     <i class="fa-solid fa-xmark"></i>
                 </a>
                 <div id='features'>
-                    <h2><b>2024 Internet Access Seattle Area</b></h2>
+                    <h2><b>Population Data</b></h2>
                     <div id='text-description'>
                         <p>Click on a Neighborhood!</p>
                     </div>
@@ -117,13 +141,13 @@
                     <canvas id="line-chart"></canvas>
                 </div> 
                 <div id="side-panel">
-                    <h3>Internet Access Data by Neighborhood</h3>
+                    <h3>Internet Access Data</h3>
                     <table>
                         <tr> 
                             <th>Area</th>
                             <th>Risk Factor <i id="risk-button" class="fa fa-fw fa-sort"></i></th>
-                            <th>Mean Income <i id="mean-income-button" class="fa fa-fw fa-sort"></i></th>
-                            <th>Devices <i id="device-button" class="fa fa-fw fa-sort"></i></th>
+                            <th>Total Population <i id="mean-income-button" class="fa fa-fw fa-sort"></i></th>
+                            <th>Median Number of Devices <i id="device-button" class="fa fa-fw fa-sort"></i></th>
                         </tr>
                     </table>
                 </div>
