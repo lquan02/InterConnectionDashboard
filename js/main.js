@@ -2,7 +2,7 @@
 mapboxgl.accessToken = 'pk.eyJ1IjoiamFrb2J6aGFvIiwiYSI6ImNpcms2YWsyMzAwMmtmbG5icTFxZ3ZkdncifQ.P9MBej1xacybKcDN_jehvw';
 const map = new mapboxgl.Map({
     container: 'map', // container ID
-    style: 'mapbox://styles/mapbox/dark-v11', // style URL
+    style: 'mapbox://styles/mapbox/light-v11', // style URL
     zoom: 9, // starting zoom
     maxBounds: [
         [-122.7, 47.33], // Southwest coordinates
@@ -18,7 +18,7 @@ let sortStates = [false, false, false, false]; // Sorting states for each column
 
 async function fetchData() {
     try {
-        const response = await fetch('data/basemap.geojson');
+        const response = await fetch('data/map.geojson');
         if (!response.ok) throw new Error('Network response was not ok.');
         geojson_data = await response.json();
         setupMapLayers();  // Call setupMapLayers to ensure layers are added correctly
@@ -62,7 +62,6 @@ function addOrUpdateLayers() {
             }
         });
     }
-
     // Adding border layer for clarity
     map.addLayer({
         'id': 'geojson_data_borders',
@@ -83,14 +82,12 @@ function attachEventHandlers() {
         if (e.features.length > 0) {
             const feature = e.features[0];
             const descriptionHTML = `
-                <h3>${feature.properties.TractNameLong + " | " + feature.properties.NameDataSet_CRA_NAM}</h3>
+                <h3>${feature.properties.TractNameLong}</h3>
                 <p>Social Economic Risk Level: ${feature.properties.SDQuintile}</p>
-                <p>Total Population: ${feature.properties.TotalPop}</p>
-            `;
+                <p>Total Population: ${feature.properties.TotalPop}</p> `;
             document.getElementById('text-description').innerHTML = descriptionHTML;
         }
     });
-
     map.on('mouseenter', 'geojson_data_layer', function () {
         map.getCanvas().style.cursor = 'pointer';
     });
@@ -164,7 +161,7 @@ function attachSortListeners() {
 function updateSortIcons() {
     const icons = document.querySelectorAll("#side-panel th i");
     icons.forEach((icon, index) => {
-        icon.className = sortStates[index] ? 'fa fa-fw fa-sort-up' : 'fa fa-fw fa-sort-down';
+        icon.className = sortStates[index] ? 'fa fa-fw fa-sort' : 'fa fa-fw fa-sort';
     });
 }
 
