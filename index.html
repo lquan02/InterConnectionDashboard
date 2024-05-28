@@ -53,7 +53,6 @@
                     <a href="javascript:void(0)" id="closebtn" onclick="closePopup(1)">
                         <i class="fa-solid fa-xmark"></i>
                     </a>
-                    <!--FIX THIS MATCH WITH OUR PROJECT OVERVIEW AND GOAL-->
                     <div id="content-popup">
                         <h3><strong> About Our Sponsor</strong></h3>
                             <p>
@@ -61,13 +60,15 @@
                             </p>
                         <h3><strong>Project Goals</strong> </h3>
                             <p>
-                                When most people think about Seattle, having access to different kinds of technology all around you might be something that people think of as normal or expected but the reality is that this is not the case for everyone. This is why our project's primary goal is to display where inequities exist across Seattle regarding access to laptops or tablets, personal and by household. By creating necessary visualizations, we can more succinctly represent where people lack access to the internet or devices and why this might be the case, whether it's due to a higher percentage of low-income households, a larger senior population, and/or other factors. These visualizations help spread awareness and further InterConnection's impact as a non-profit.
+                                Our capstone project aims to align more closely with digital equity goals by leveraging existing census data to identify neighborhoods in Seattle with the greatest need for InterConnection's services.
+
+                                We are enhancing the available data by combining various variables to provide new insights. Our approach hopes to enable quick access to critical information, highlighting areas where digital equity can be improved.
                                 <br><br>
                             </p>
                         <h3><strong> Glossary </strong></h3>
                         <p><strong>Area:</strong></p>
                         <p>
-                            Represents the different areas in Seattle along with their associated Census Tract name and number.
+                            This map represents the various areas in Seattle, displaying their corresponding Census Tract names and numbers. The Census Tract numbers are organized from north to south, starting with 1 in the northernmost area and ending with 121 in the southernmost area.
                         </p>
                         <p><strong>Socioeconomic Disadvantage Risk Index:</strong></p>
                         <p>
@@ -123,9 +124,7 @@
                 </a>
             </div>
             <div id="side-container">
-                <a href="javascript:void(0)" id="closebtn" onclick="closeNav()">
-                    <i class="fa-solid fa-xmark"></i>
-                </a>
+                
                 <div id='features'>
                     <h2><b>Digital Access Statistics</b></h2>
                     <div id='text-description'>
@@ -141,9 +140,9 @@
                     <h3>Digital Access Data by Census Tract</h3>
                     <table>
                         <tr> 
-                            <th>Census Tract Code</th>
+                            <th>Area</th>
                             <th>Risk Index<i id="risk-button" class="fa fa-fw fa-sort"></i></th>
-                            <th>Area Population<i id="mean-income-button" class="fa fa-fw fa-sort"></i></th>
+                            <th>Total Population<i id="mean-income-button" class="fa fa-fw fa-sort"></i></th>
                             <th>Total Devices<i id="device-button" class="fa fa-fw fa-sort"></i></th>
                         </tr>
                     </table>

@@ -83,8 +83,9 @@ function attachEventHandlers() {
             const feature = e.features[0];
             const descriptionHTML = `
                 <h3>${feature.properties.TractNameLong}</h3>
-                <p>Social Economic Risk Level: ${feature.properties.SDQuintile}</p>
-                <p>Total Population: ${feature.properties.TotalPop}</p> `;
+                <p>Socioeconomic Risk Index: ${feature.properties.SDQuintile}</p>
+                <p>Total Population: ${feature.properties.TotalPop}</p> 
+                <p>Median Household Devices: ${feature.properties.HHMedianDeviceCount}</p> `;
             document.getElementById('text-description').innerHTML = descriptionHTML;
         }
     });
