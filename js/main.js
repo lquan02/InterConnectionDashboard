@@ -14,7 +14,7 @@ const map = new mapboxgl.Map({
 map.addControl(new mapboxgl.NavigationControl(), 'top-left');
 
 let geojson_data;
-let sortStates = [false, false, false, false]; // Sorting states for each column
+let sortCensus = [false, false, false, false]; // Sorting states for each column
 
 async function fetchData() {
     try {
@@ -153,7 +153,7 @@ function attachSortListeners() {
     const sortHeaders = document.querySelectorAll("#side-panel th");
     sortHeaders.forEach((header, index) => {
         header.addEventListener('click', () => {
-            sortToggle(sortStates, index);
+            sortToggle(sortCensus, index);
             updateSortIcons();
         });
     });
@@ -162,12 +162,12 @@ function attachSortListeners() {
 function updateSortIcons() {
     const icons = document.querySelectorAll("#side-panel th i");
     icons.forEach((icon, index) => {
-        icon.className = sortStates[index] ? 'fa fa-fw fa-sort' : 'fa fa-fw fa-sort';
+        icon.className = sortCensus[index] ? 'fa fa-fw fa-sort' : 'fa fa-fw fa-sort';
     });
 }
 
 function sortToggle(arr, num) {
-    arr[num] = !arr[num]; // Toggle the state
+    arr[num] = !arr[num]; // Toggle the census tract
     sortTable(num, arr[num]);
 }
 
